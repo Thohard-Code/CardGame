@@ -13,13 +13,6 @@ import java.io.IOException;
 public class OptionsController {
 
     @FXML
-    private Label welcomeText;
-
-    private Stage getStage() {
-        return (Stage) welcomeText.getScene().getWindow();
-    }
-
-    @FXML
     private Slider soundSlider;
 
     @FXML
@@ -42,12 +35,13 @@ public class OptionsController {
         soundVolumeLabel.textProperty().bind(soundSlider.valueProperty().asString("%.0f%%"));
         musicVolumeLabel.textProperty().bind(musicSlider.valueProperty().asString("%.0f%%"));
 
+        // Set the selected item based on the current global resolution
+        String currentResolution = Settings.getInstance().getResolution();
+        menuSizeChoiceBox.getSelectionModel().select(currentResolution);
 
-        graphicsChoiceBox.getSelectionModel().selectFirst();
-        menuSizeChoiceBox.getSelectionModel().select(1); // Default to Standard (1280x720)
-
-
+        // Apply the resolution when the user selects a new one
         menuSizeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
+            Settings.getInstance().setResolution(newValue);
             applyResolution(newValue);
         });
     }
@@ -58,33 +52,34 @@ public class OptionsController {
             case "Fullscreen (1920x1080)":
                 stage.setWidth(1920);
                 stage.setHeight(1080);
-                stage.setFullScreen(true);
-                stage.centerOnScreen();
+                stage.setFullScreen(false);  // This stays as per your previous setup
                 break;
             case "Standard (1280x720)":
                 stage.setWidth(1280);
                 stage.setHeight(720);
                 stage.setFullScreen(false);
-                stage.centerOnScreen();
                 break;
             case "Small (960x540)":
                 stage.setWidth(960);
                 stage.setHeight(540);
                 stage.setFullScreen(false);
-                stage.centerOnScreen();
-                break;
-            default:
-                // Default case
                 break;
         }
+        stage.centerOnScreen();
     }
 
     @FXML
     protected void onMainMenuButtonClick() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Menu.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1280, 720);
+        Scene scene = new Scene(fxmlLoader.load());
         Stage stage = getStage();
+        // Apply the globally selected resolution
+        applyResolution(Settings.getInstance().getResolution());
         stage.setScene(scene);
         stage.setTitle("CardGame");
+    }
+
+    private Stage getStage() {
+        return (Stage) soundSlider.getScene().getWindow();
     }
 }
